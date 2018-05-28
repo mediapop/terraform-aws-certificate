@@ -19,7 +19,7 @@ resource "aws_route53_record" "records" {
   // A better option would've been
   // count = "${length(aws_acm_certificate.cert.domain_validation_options)}"
   // but it will error out with a 'value of 'count' cannot be computed' on a clean build.
-  count = "${length(local.domains)}"
+  count = "${length(local.validations_needed)}"
 
   name = "${lookup(aws_acm_certificate.cert.domain_validation_options[count.index], "resource_record_name")}"
   type = "${lookup(aws_acm_certificate.cert.domain_validation_options[count.index], "resource_record_type")}"
@@ -49,4 +49,3 @@ resource "aws_acm_certificate_validation" "cert_validation" {
 
   provider = "aws.required-acm-region"
 }
-

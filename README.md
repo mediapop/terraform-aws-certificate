@@ -14,7 +14,7 @@ module "cert" {
 
   domains = {
     "zone-name.com." = ["record.zone-name.com"]
-    "mediapop.co."   = ["mediapop.co", "www.mediapop.co"]
+    "mediapop.co."   = ["mediapop.co", "*.mediapop.co"]
   }
 }
 
