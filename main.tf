@@ -8,6 +8,9 @@ resource "aws_acm_certificate" "cert" {
   subject_alternative_names = "${local.subject_alternative_names}"
   validation_method         = "DNS"
   provider                  = "aws.required-acm-region"
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 data "aws_route53_zone" "zone" {
