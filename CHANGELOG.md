@@ -1,3 +1,13 @@
+# 1.0.2
+
+BUG FIXES:
+
+* Fix multi-record validations not getting applied.
+
+ENHANCEMENTS:
+
+* Added an example for multi-zones.
+
 # 1.0.1
 
 BUG FIXES:
@@ -6,4 +16,4 @@ BUG FIXES:
 
 # 1.0
 
-Initial release
+Initial release.
