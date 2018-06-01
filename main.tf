@@ -28,27 +28,28 @@ resource "aws_route53_record" "records" {
   // * https://github.com/hashicorp/terraform/issues/17421
   count = "${local.validations_needed}"
 
-  name = "${lookup(aws_acm_certificate.cert.domain_validation_options[count.index], "resource_record_name")}"
-  type = "${lookup(aws_acm_certificate.cert.domain_validation_options[count.index], "resource_record_type")}"
+  name = "${lookup(aws_acm_certificate.cert.0.domain_validation_options[count.index], "resource_record_name")}"
+  type = "${lookup(aws_acm_certificate.cert.0.domain_validation_options[count.index], "resource_record_type")}"
 
   // It basically reverses the zone_name from the domain_name, then the zone_id from the zone_name.
   zone_id = "${
     element(matchkeys(
       data.aws_route53_zone.zone.*.id,
       data.aws_route53_zone.zone.*.name,
-      local.record_map[lookup(aws_acm_certificate.cert.domain_validation_options[count.index], "domain_name")]
+      local.record_map[lookup(aws_acm_certificate.cert.0.domain_validation_options[count.index], "domain_name")]
     ), 0)
   }"
 
   records = [
-    "${lookup(aws_acm_certificate.cert.domain_validation_options[count.index], "resource_record_value")}",
+    "${lookup(aws_acm_certificate.cert.0.domain_validation_options[count.index], "resource_record_value")}",
   ]
 
   ttl = 60
 }
 
 resource "aws_acm_certificate_validation" "cert_validation" {
-  certificate_arn = "${aws_acm_certificate.cert.arn}"
+  count           = "${local.validations_needed > 0 ? 1 : 0}"
+  certificate_arn = "${aws_acm_certificate.cert.0.arn}"
 
   validation_record_fqdns = [
     "${aws_route53_record.records.*.fqdn}",

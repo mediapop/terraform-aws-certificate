@@ -1,3 +1,9 @@
+# 1.1.0
+
+FEATURES:
+
+* Allow passing an empty map.
+
 # 1.0.2
 
 BUG FIXES:
