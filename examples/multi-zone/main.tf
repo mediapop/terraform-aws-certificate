@@ -4,7 +4,7 @@ provider "aws" {
 }
 
 module "cert" {
-  source = "mediapop/certificate/aws"
+  source = "../../"
 
   domains = {
     "uatdomains.com." = ["terraform-aws-certificate-multi-zone.uatdomains.com"]

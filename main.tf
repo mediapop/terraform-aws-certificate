@@ -4,6 +4,7 @@ provider "aws" {
 }
 
 resource "aws_acm_certificate" "cert" {
+  count                     = "${local.validations_needed > 0 ? 1 : 0}"
   domain_name               = "${local.domain}"
   subject_alternative_names = "${local.subject_alternative_names}"
   validation_method         = "DNS"
