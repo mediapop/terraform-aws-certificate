@@ -4,7 +4,7 @@ Being able to pass in an empty map is useful if your certificate may depend on t
 
 ```hcl
 variable "domains" {
-  type = "map"
+  type = map
 
   default = {
     "default" = {}
@@ -17,6 +17,6 @@ variable "domains" {
 
 module "cert" {
   source  = "mediapop/certiciate/aws"
-  domains = "${var.domains[var.workspace]}"
+  domains = var.domains[var.workspace]
 }
 ```

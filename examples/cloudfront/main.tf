@@ -7,14 +7,14 @@ locals {
   domain = "terraform-aws-certificate.uatdomains.com"
 
   domains = {
-    "uatdomains.com." = ["${local.domain}"]
+    "uatdomains.com." = [local.domain]
   }
 }
 
 module "cert" {
   source = "mediapop/certificate/aws"
 
-  domains = "${local.domains}"
+  domains = local.domains
 }
 
 resource "random_string" "redirect-bucket" {
@@ -23,7 +23,7 @@ resource "random_string" "redirect-bucket" {
 }
 
 resource "aws_s3_bucket" "301" {
-  bucket = "${lower(random_string.redirect-bucket.result)}"
+  bucket = lower(random_string.redirect-bucket.result)
 
   website {
     redirect_all_requests_to = "https://mediapop.co"
@@ -31,8 +31,8 @@ resource "aws_s3_bucket" "301" {
 }
 
 resource "aws_cloudfront_distribution" "redirect" {
-  "origin" {
-    domain_name = "${aws_s3_bucket.301.website_endpoint}"
+  origin {
+    domain_name = aws_s3_bucket.301.website_endpoint
     origin_id   = "website"
 
     custom_origin_config {
@@ -51,10 +51,10 @@ resource "aws_cloudfront_distribution" "redirect" {
   is_ipv6_enabled = true
 
   aliases = [
-    "${local.domain}",
+    local.domain,
   ]
 
-  "default_cache_behavior" {
+  default_cache_behavior {
     allowed_methods = [
       "HEAD",
       "GET",
@@ -65,10 +65,10 @@ resource "aws_cloudfront_distribution" "redirect" {
       "GET",
     ]
 
-    "forwarded_values" {
+    forwarded_values {
       query_string = false
 
-      "cookies" {
+      cookies {
         forward = "none"
       }
     }
@@ -84,14 +84,14 @@ resource "aws_cloudfront_distribution" "redirect" {
     }
   }
 
-  "viewer_certificate" {
+  viewer_certificate {
     cloudfront_default_certificate = true
   }
 }
 
 module "dns" {
   source               = "mediapop/route53-alias/aws"
-  domains              = "${local.domains}"
-  alias_hosted_zone_id = "${aws_cloudfront_distribution.redirect.hosted_zone_id}"
-  alias_domain_name    = "${aws_cloudfront_distribution.redirect.domain_name}"
+  domains              = local.domains
+  alias_hosted_zone_id = aws_cloudfront_distribution.redirect.hosted_zone_id
+  alias_domain_name    = aws_cloudfront_distribution.redirect.domain_name
 }

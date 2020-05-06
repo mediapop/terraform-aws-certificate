@@ -19,8 +19,8 @@ module "cert" {
 }
 
 resource "aws_cloudfront_distribution" "redirect" {
-  "viewer_certificate" {
-    acm_certificate_arn = "${module.cert.arn}"
+  viewer_certificate {
+    acm_certificate_arn = module.cert.arn
 
     // ...
   }
