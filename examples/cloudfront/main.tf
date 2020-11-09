@@ -21,7 +21,7 @@ resource "random_string" "redirect-bucket" {
   special = false
 }
 
-resource "aws_s3_bucket" "301" {
+resource "aws_s3_bucket" "redirect" {
   bucket = lower(random_string.redirect-bucket.result)
 
   website {
@@ -31,7 +31,7 @@ resource "aws_s3_bucket" "301" {
 
 resource "aws_cloudfront_distribution" "redirect" {
   origin {
-    domain_name = aws_s3_bucket.301.website_endpoint
+    domain_name = aws_s3_bucket.redirect.website_endpoint
     origin_id   = "website"
 
     custom_origin_config {
