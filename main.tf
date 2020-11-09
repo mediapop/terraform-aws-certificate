@@ -1,14 +1,14 @@
 provider "aws" {
   region = "us-east-1"
-  alias  = "required-acm-region"
+  alias  = "acm"
 }
 
 resource "aws_acm_certificate" "cert" {
-  count                     = local.validations_needed > 0 ? 1 : 0
+  count                     = length(local.domains) > 0 ? 1 : 0
   domain_name               = local.domain
   subject_alternative_names = local.subject_alternative_names
   validation_method         = "DNS"
-  provider                  = aws.required-acm-region
+  provider                  = aws.acm
 
   lifecycle {
     create_before_destroy = true
@@ -16,40 +16,39 @@ resource "aws_acm_certificate" "cert" {
 }
 
 data "aws_route53_zone" "zone" {
-  count = length(local.zones)
-  name  = local.zones[count.index]
+  for_each = var.domains
+  name     = each.key
 }
 
-resource "aws_route53_record" "records" {
-  // A better option would've been
-  // count = length(aws_acm_certificate.cert.domain_validation_options)
-  // but it will error out with a 'value of 'count' cannot be computed' on a clean build.
-  // It seems like this will be solved with HCL2
-  // * https://github.com/hashicorp/terraform/issues/17421
-  count = local.validations_needed
+resource "aws_route53_record" "record" {
+  // I would use aws_acm_certificate.cert.0.domain_validation_options directly, but we can't iterate over a set of
+  // objects.
+  for_each = {
+    // Asking for aws_acm_certificate.cert.0 will raise an exception when no certificate is being setup.
+    for dvo in flatten(aws_acm_certificate.cert.*.domain_validation_options) : dvo.domain_name => {
+      name  = dvo.resource_record_name
+      value = dvo.resource_record_value
+      type  = dvo.resource_record_type
 
-  name = lookup(aws_acm_certificate.cert.0.domain_validation_options[count.index], "resource_record_name")
-  type = lookup(aws_acm_certificate.cert.0.domain_validation_options[count.index], "resource_record_type")
+      zone_id = data.aws_route53_zone.zone[local.host_to_zone[dvo.domain_name]].zone_id
+    }
+  }
 
-  // It basically reverses the zone_name from the domain_name, then the zone_id from the zone_name.
-  zone_id = element(matchkeys(
-    data.aws_route53_zone.zone.*.id,
-    data.aws_route53_zone.zone.*.name,
-    local.record_map[lookup(aws_acm_certificate.cert.0.domain_validation_options[count.index], "domain_name")]
-  ), 0)
-
-  records = [
-    lookup(aws_acm_certificate.cert.0.domain_validation_options[count.index], "resource_record_value"),
-  ]
-
-  ttl = 60
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.value]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = each.value.zone_id
 }
 
 resource "aws_acm_certificate_validation" "cert_validation" {
-  count           = local.validations_needed > 0 ? 1 : 0
+  count           = length(aws_route53_record.record) > 0 ? 1 : 0
   certificate_arn = aws_acm_certificate.cert.0.arn
 
-  validation_record_fqdns = aws_route53_record.records.*.fqdn
+  validation_record_fqdns = [
+    for record in aws_route53_record.record : record.fqdn
+  ]
 
-  provider = aws.required-acm-region
+  provider = aws.acm
 }

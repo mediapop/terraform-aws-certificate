@@ -21,6 +21,7 @@ module "cert" {
 resource "aws_cloudfront_distribution" "redirect" {
   viewer_certificate {
     acm_certificate_arn = module.cert.arn
+    ssl_support_method  = "sni-only"
 
     // ...
   }

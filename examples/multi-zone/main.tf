@@ -1,6 +1,5 @@
 provider "aws" {
-  region  = "ap-southeast-1"
-  version = "~> 1.21.0"
+  region = "ap-southeast-1"
 }
 
 module "cert" {
@@ -10,4 +9,8 @@ module "cert" {
     "uatdomains.com." = ["terraform-aws-certificate-multi-zone.uatdomains.com"]
     "mediapop.co."    = ["terraform-aws-certificate-multi-zone.mediapop.co"]
   }
+}
+
+output "test" {
+  value = module.cert.arn
 }

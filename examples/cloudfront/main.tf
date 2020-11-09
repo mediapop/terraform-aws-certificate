@@ -1,5 +1,5 @@
 provider "aws" {
-  region  = "ap-southeast-1"
+  region = "ap-southeast-1"
 }
 
 locals {
@@ -19,10 +19,11 @@ module "cert" {
 resource "random_string" "redirect-bucket" {
   length  = 16
   special = false
+  upper   = false
 }
 
 resource "aws_s3_bucket" "redirect" {
-  bucket = lower(random_string.redirect-bucket.result)
+  bucket = random_string.redirect-bucket.result
 
   website {
     redirect_all_requests_to = "https://mediapop.co"
@@ -73,7 +74,6 @@ resource "aws_cloudfront_distribution" "redirect" {
     }
 
     target_origin_id       = "website"
-    compress               = true
     viewer_protocol_policy = "allow-all"
   }
 
@@ -84,12 +84,14 @@ resource "aws_cloudfront_distribution" "redirect" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = module.cert.arn
+    ssl_support_method  = "sni-only"
   }
 }
 
 module "dns" {
   source               = "mediapop/route53-alias/aws"
+  version              = ">= 1.2.0"
   domains              = local.domains
   alias_hosted_zone_id = aws_cloudfront_distribution.redirect.hosted_zone_id
   alias_domain_name    = aws_cloudfront_distribution.redirect.domain_name

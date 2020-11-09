@@ -1,3 +1,11 @@
+# 1.2.0
+
+This role now requires terraform 0.13 syntax.
+
+BREAKING:
+
+* If a certificate was not provisions now sets `output.arn` to `null` instead of an empty string.
+
 # 1.1.0
 
 FEATURES:
