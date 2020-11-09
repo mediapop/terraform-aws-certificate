@@ -31,9 +31,9 @@ resource "aws_cloudfront_distribution" "redirect" {
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|:----:|:-----:|:-----:|
-| domains | Map of the zone names to records the certificate is for. | map | - | yes |
+| Name | Description | Type | Required |
+|------|-------------|:----:|:-----:|
+| domains | Map of the zone names to records the certificate is for. | map | yes |
 
 ## Outputs
 
