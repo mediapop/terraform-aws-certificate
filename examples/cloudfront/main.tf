@@ -11,7 +11,7 @@ locals {
 }
 
 module "cert" {
-  source = "mediapop/certificate/aws"
+  source = "../../"
 
   domains = local.domains
 }
