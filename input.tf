@@ -14,4 +14,5 @@ locals {
 
   domain                    = try(element(local.domains, 0), null)
   subject_alternative_names = try(slice(local.domains, 1, length(local.domains)), [])
+  certificates_issued       = length(local.domains) > 0 ? 1 : 0
 }

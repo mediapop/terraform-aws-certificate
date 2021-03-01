@@ -1,3 +1,9 @@
+# 1.2.1
+
+BUG FIXES:
+
+* Remove a source of failure from inspecting a dynamic source.
+
 # 1.2.0
 
 This role now requires terraform 0.13 syntax.
