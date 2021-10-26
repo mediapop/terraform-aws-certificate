@@ -21,13 +21,10 @@ data "aws_route53_zone" "zone" {
 }
 
 resource "aws_route53_record" "record" {
-  // I would use aws_acm_certificate.cert.0.domain_validation_options directly, but we can't iterate over a set of
-  // objects.
   for_each = {
-    // Asking for aws_acm_certificate.cert.0 will raise an exception when no certificate is being setup.
-    for dvo in flatten(aws_acm_certificate.cert.*.domain_validation_options) : dvo.domain_name => {
+    for dvo in aws_acm_certificate.cert.0.domain_validation_options : dvo.domain_name => {
       name  = dvo.resource_record_name
-      value = dvo.resource_record_value
+      record = dvo.resource_record_value
       type  = dvo.resource_record_type
 
       zone_id = data.aws_route53_zone.zone[local.host_to_zone[dvo.domain_name]].zone_id
@@ -36,7 +33,7 @@ resource "aws_route53_record" "record" {
 
   allow_overwrite = true
   name            = each.value.name
-  records         = [each.value.value]
+  records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
   zone_id         = each.value.zone_id
@@ -49,6 +46,9 @@ resource "aws_acm_certificate_validation" "cert_validation" {
   validation_record_fqdns = [
     for record in aws_route53_record.record : record.fqdn
   ]
+
+  provider = aws.acm
+}
 
   provider = aws.acm
 }
